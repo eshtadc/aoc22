@@ -8,3 +8,7 @@ export function parseLinesFromFile(filename) {
 export function writeAnswer(output, part = 1) {
     console.log(`Final answer for part ${part}: `, output);
 }
+
+export function getAlphabet() {
+    return 'abcdefghijklmnopqrstuvwxyz';
+}
