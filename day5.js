@@ -1,8 +1,7 @@
 import { parseLinesFromFile, writeAnswer } from './helpers.js';
 
-const crateRegex = /[A-Z]/;
 function generateCrateLetter(crateString) {
-    const letter = crateString.match(crateRegex);
+    const letter = crateString.match(/[A-Z]/);
     return letter ? letter[0] : undefined;
 }
 
