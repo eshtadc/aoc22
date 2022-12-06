@@ -1,7 +1,11 @@
 import fs from 'fs';
 
+export function readFile(filename) {
+    return fs.readFileSync(filename, 'utf8');
+}
+
 export function parseLinesFromFile(filename) {
-    const input = fs.readFileSync(filename, 'utf8');
+    const input = readFile(filename);
     return input.split('\n');
 }
 
