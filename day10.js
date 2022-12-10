@@ -1,40 +1,19 @@
 import { parseLinesFromFile, writeAnswer } from './helpers.js';
 
-function isSignalCycle(x, offset = 0) {
+function isSignalCycle(x) {
     return x === 20 || (x - 20) % 40 === 0;
 }
 
-function addSignalStrenth(cycle, val, signals, offset = 0) {
-    if (isSignalCycle(cycle, offset)) {
-        console.log('Signal', cycle, val);
+function addSignalStrenth(cycle, val, signals) {
+    if (isSignalCycle(cycle)) {
         signals.push(cycle * val);
     }
     return signals;
 }
 
-function determineSignals(input) {
-    const signalOffset = 20;
-    const state = input.reduce((all, instruction) => {
-        let startingCycle = all.cycle;
-        let nextCycle = instruction === 'noop' ? startingCycle + 1 : startingCycle + 2;
-        let nextX = all.x;
-        if (instruction !== 'noop') {
-            const [_, valStr] = instruction.split(' ');
-            const val = parseInt(valStr, 10);
-            nextX = all.x + val;
-            addSignalStrenth(startingCycle+1, all.x, all.signals, signalOffset);
-        }
-        addSignalStrenth(nextCycle, all.x, all.signals);
-        all.x = nextX;
-        all.cycle = nextCycle;
-        return all;
-    }, {
-        cycles: new Map(),
-        x: 1,
-        cycle: 0,
-        signals: [],
-    });
-    return state.signals;
+function addPixel(cycle, val, pixels) {
+    pixels.push(getPixel(cycle, val));
+    return pixels;
 }
 
 function getPixel(cycle, x) {
@@ -45,7 +24,7 @@ function getPixel(cycle, x) {
     return '.';
 }
 
-function generateScreen(input) {
+function generateState(input, updateFn) {
     const state = input.reduce((all, instruction) => {
         let startingCycle = all.cycle;
         let nextCycle = instruction === 'noop' ? startingCycle + 1 : startingCycle + 2;
@@ -54,19 +33,26 @@ function generateScreen(input) {
             const [_, valStr] = instruction.split(' ');
             const val = parseInt(valStr, 10);
             nextX = all.x + val;
-            all.pixels.push(getPixel(startingCycle+1, all.x));
+            updateFn(startingCycle+1, all.x, all.results);
         }
-        all.pixels.push(getPixel(nextCycle, all.x));
+        updateFn(nextCycle, all.x, all.results);
         all.x = nextX;
         all.cycle = nextCycle;
         return all;
     }, {
-        pixels: [],
         x: 1,
         cycle: 0,
-        signals: [],
+        results: [],
     });
-    return state.pixels;
+    return state.results;
+}
+
+function determineSignals(input) {
+    return generateState(input, addSignalStrenth);
+}
+
+function generateScreen(input) {
+    return generateState(input, addPixel);
 }
 
 function drawScreen(pixels) {
