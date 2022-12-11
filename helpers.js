@@ -5,8 +5,12 @@ export function readFile(filename) {
 }
 
 export function parseLinesFromFile(filename) {
+    return parseFile('\n');
+}
+
+export function parseFile(filename, separator) {
     const input = readFile(filename);
-    return input.split('\n');
+    return input.split(separator);
 }
 
 export function writeAnswer(output, part = 1) {
