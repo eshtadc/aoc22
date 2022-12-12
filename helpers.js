@@ -5,7 +5,7 @@ export function readFile(filename) {
 }
 
 export function parseLinesFromFile(filename) {
-    return parseFile('\n');
+    return parseFile(filename, '\n');
 }
 
 export function parseFile(filename, separator) {
