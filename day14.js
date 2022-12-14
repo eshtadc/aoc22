@@ -66,35 +66,33 @@ function sandIsFalling([sandX, sandY], cave, floor) {
     const currentSand = generateGridKey(sandX, sandY);
     // can move down?
     if (canMove(currentSand, [sandX, sandY+1], cave, floor)) {
-        return { falling: true, pos: [sandX, sandY+1] };
+        return [sandX, sandY+1];
     }
     // can move down-left
     if (canMove(currentSand, [sandX-1, sandY+1], cave, floor)) {
-        return { falling: true, pos: [sandX-1, sandY+1]};
+        return [sandX-1, sandY+1];
     }
 
     // can move down-right
     if (canMove(currentSand, [sandX+1, sandY+1], cave, floor)) {
-        return { falling: true, pos: [sandX+1, sandY+1] };
+        return [sandX+1, sandY+1];
     }
-    return { falling: false, pos: [sandX, sandY] };
+    return [sandX, sandY];
 }
 
-function addSand(cave, maxY, floor) {
-    const hasFloor = typeof floor === 'number';
+function addSand(cave, floor, isEndless) {
     let sandPosition = START;
     let falling = true;
-    let escaped = false;
-    while (falling && !escaped) {
-        const result = sandIsFalling(sandPosition, cave, floor);
-        falling = result.falling;
-        sandPosition = result.pos;
-        if (sandPosition[1] > maxY) {
-            // SAND HAS BROKEN FREE AAAAAHHHH
-            escaped = true;
+    while (falling) {
+        const fallenPosition = sandIsFalling(sandPosition, cave, isEndless ? undefined : floor);
+        falling = fallenPosition[0] !== sandPosition[0] || fallenPosition[1] !== sandPosition[1];
+        if (fallenPosition[1] > floor) {
+            console.log('OHHHH NOOOOOOOOO')
+            throw new Error('Sand has broken free');
         }
+        sandPosition = fallenPosition;
     }
-    return hasFloor ? sandPosition : escaped;
+    return sandPosition;
 }
 
 function parseRocks(filename) {
@@ -109,25 +107,22 @@ function parseRocks(filename) {
     }, { minX: Number.MAX_VALUE, minY: Number.MAX_VALUE, maxX: 0, maxY: 0, rocks: new Map() });
 }
 
-function fillCave(cave, floor) {
+function fillCave(cave, floor, isEndless = true) {
     let totalGrains = 0;
     let isFilling = true;
     while (isFilling) {
         totalGrains++;
-        const [x, y] = addSand(cave, floor+1, floor);
-        isFilling = y !== START[1];
+        let sandY;
+        try {
+            const position = addSand(cave, floor, isEndless);
+            sandY = position[1];
+        } catch (e) {
+            // Escaped sand!!!
+            return totalGrains - 1; // last one escaped
+        }
+        isFilling = sandY !== START[1];
     }
     return totalGrains;
-}
-
-function fillEndlessCave(cave, lastRockY) {
-    let totalGrains = 0;
-    let escaped = false;
-    while (!escaped) {
-        totalGrains++;
-        escaped = addSand(cave, lastRockY);
-    }
-    return totalGrains-1; // last one escaped
 }
 
 function drawCave(cave, [tlX, tlY], [brX, brY]) {
@@ -145,23 +140,27 @@ function drawCave(cave, [tlX, tlY], [brX, brY]) {
     }
 }
 
-function solveProblem1(filename) {
+function solveProblem(filename, isEndlessCave, drawSolution = false) {
     const { minX, _minY, maxX, maxY, rocks } = parseRocks(filename);
     drawCave(rocks, [minX, 0], [maxX, maxY]);
-    const totalGrains = fillEndlessCave(rocks, maxY);
-    console.log('~~~~~~~~~~~~~~~~~~~~~~~');
-    drawCave(rocks, [minX, 0], [maxX, maxY]);
-    writeAnswer(totalGrains);
+    const totalSand = fillCave(rocks, isEndlessCave ? maxY : maxY + 2, isEndlessCave);
+    if (drawSolution) {
+        drawCave(rocks, [minX, 0], [maxX, maxY]);
+    }
+    return totalSand;
+}
+
+function solveProblem1(filename) {
+    const answer = solveProblem(filename, true, true);
+    writeAnswer(answer);
 }
 
 function solveProblem2(filename) {
-    const { minX, minY, maxX, maxY, rocks } = parseRocks(filename);
-    const floor = maxY + 2;
-    const totalGrains = fillCave(rocks, floor);
-    writeAnswer(totalGrains, 2);
+    const answer = solveProblem(filename, false, true);
+    writeAnswer(answer, 2);
 }
 
-//const filename = './day14.sample.txt';
-const filename = './day14.puzzle.txt';
+const filename = './day14.sample.txt';
+// const filename = './day14.puzzle.txt';
 solveProblem1(filename);
 solveProblem2(filename);
