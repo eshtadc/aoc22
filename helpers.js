@@ -20,3 +20,18 @@ export function writeAnswer(output, part = 1) {
 export function getAlphabet() {
     return 'abcdefghijklmnopqrstuvwxyz';
 }
+
+export function drawGrid(grid, [tlX, tlY], [brX, brY], empty='.') {
+    for (let y=tlY; y<=brY; y++) {
+        let line = '';
+        for (let x=tlX; x<=brX; x++) {
+            const key = generateGridKey(x,y);
+            if (grid.has(key)) {
+                line = `${line}${grid.get(key)}`
+            } else {
+                line = `${line}${empty}`;
+            }
+        }
+        console.log(line);
+    }
+}

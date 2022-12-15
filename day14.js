@@ -1,4 +1,4 @@
-import { parseFile, parseLinesFromFile, writeAnswer } from './helpers.js';
+import { parseLinesFromFile, writeAnswer } from './helpers.js';
 
 const ROCK = '#';
 const AIR = '.';
@@ -7,10 +7,6 @@ const START = [500,0];
 
 function generateGridKey(x, y) {
     return `${x}_${y}`;
-}
-
-function generateCoordFromKey(key) {
-    return key.split('_');
 }
 
 function addRockLine(rocks, grid) {
